@@ -1,5 +1,8 @@
 package org.example.config;
 
+import org.example.registry.RegistryFactory;
+import org.example.registry.RegistryService;
+import org.example.enums.RegistryType;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
