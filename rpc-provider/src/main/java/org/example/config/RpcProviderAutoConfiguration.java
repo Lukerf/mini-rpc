@@ -1,5 +1,6 @@
 package org.example.config;
 
+import org.example.RpcProvider;
 import org.example.registry.RegistryFactory;
 import org.example.registry.RegistryService;
 import org.example.enums.RegistryType;

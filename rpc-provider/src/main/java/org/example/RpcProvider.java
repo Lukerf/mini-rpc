@@ -1,4 +1,4 @@
-package org.example.config;
+package org.example;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.RpcServiceHelper;
 import org.example.ServiceMeta;
 import org.example.annotation.RpcService;
+import org.example.decoder.MiniRpcDecoder;
+import org.example.encoder.MiniRpcEncoder;
 import org.example.handler.in.RpcRequestHandler;
 import org.example.registry.RegistryService;
 import org.springframework.beans.BeansException;
@@ -33,7 +35,7 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor { // Bea
 
     private Map<String, Object> rpcServiceMap = new HashMap<>();
 
-    RpcProvider(int serverPort, RegistryService registryService){
+    public RpcProvider(int serverPort, RegistryService registryService){
         this.registryService = registryService;
         this.serverPort = serverPort;
     }
@@ -49,9 +51,12 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor { // Bea
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            socketChannel.pipeline()
+                                    .addLast(new MiniRpcEncoder())
+                                    .addLast(new MiniRpcDecoder())
+                                    .addLast(new RpcRequestHandler(rpcServiceMap));
                         }
                     })
-                    .childHandler(new RpcRequestHandler(rpcServiceMap))
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture channelFuture = bootstrap.bind(this.serverAddress, this.serverPort).sync();
             log.info("server addr {} started on port {}", this.serverAddress, this.serverPort);
@@ -89,6 +94,12 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor { // Bea
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
+        new Thread(() -> {
+            try {
+                startRpcServer();
+            } catch (Exception e) {
+                log.error("start rpc server error.", e);
+            }
+        }).start();
     }
 }

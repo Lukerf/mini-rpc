@@ -5,14 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @EnableConfigurationProperties
-
 @SpringBootApplication
-
-public class RpcProviderApplication {
+public class RpcConsumerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(RpcProviderApplication.class, args);
+        SpringApplication.run(RpcConsumerApplication.class, args);
     }
-
-
 }
