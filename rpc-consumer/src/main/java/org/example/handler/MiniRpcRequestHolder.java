@@ -1,6 +1,6 @@
 package org.example.handler;
 
-import org.example.protocol.MiniRpcResponse;
+import org.example.MiniRpcResponse;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

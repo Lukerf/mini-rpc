@@ -1,15 +1,24 @@
 package org.example.config;
 
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.example.registry.RegistryService;
 import org.example.RpcServiceHelper;
 import org.example.ServiceMeta;
 import org.example.annotation.RpcService;
+import org.example.handler.in.RpcRequestHandler;
+import org.example.registry.RegistryService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
-import javax.annotation.Resource;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,16 +28,38 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor { // Bea
     // 省略其他代码
 
     private RegistryService registryService;
-
+    private String serverAddress;
     private int serverPort;
-    private final Map<String, Object> rpcServiceMap = new HashMap<>();
 
-    @Resource
-    private RpcProperties properties;
+    private Map<String, Object> rpcServiceMap = new HashMap<>();
 
     RpcProvider(int serverPort, RegistryService registryService){
         this.registryService = registryService;
         this.serverPort = serverPort;
+    }
+
+    private void startRpcServer() throws Exception {
+        this.serverAddress = InetAddress.getLocalHost().getHostAddress();
+        EventLoopGroup boss = new NioEventLoopGroup();
+        EventLoopGroup worker = new NioEventLoopGroup();
+        try {
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(boss, worker)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        }
+                    })
+                    .childHandler(new RpcRequestHandler(rpcServiceMap))
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+            ChannelFuture channelFuture = bootstrap.bind(this.serverAddress, this.serverPort).sync();
+            log.info("server addr {} started on port {}", this.serverAddress, this.serverPort);
+            channelFuture.channel().closeFuture().sync();
+        } finally {
+            boss.shutdownGracefully();
+            worker.shutdownGracefully();
+        }
     }
 
     @Override
@@ -39,12 +70,11 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor { // Bea
             String serviceVersion = rpcService.serviceVersion();
             try {
                 ServiceMeta serviceMeta = new ServiceMeta();
-                serviceMeta.setServiceAddr();
+                serviceMeta.setServiceAddr(serverAddress);
                 serviceMeta.setServicePort(serverPort);
                 serviceMeta.setServiceName(serviceName);
                 serviceMeta.setServiceVersion(serviceVersion);
                 registryService.register(serviceMeta);
-                // TODO 发布服务元数据至注册中心
                 rpcServiceMap.put(RpcServiceHelper.buildServiceKey(serviceMeta.getServiceName(), serviceMeta.getServiceVersion()), bean);
             } catch (Exception e) {
                 log.error("failed to register service {}#{}", serviceName, serviceVersion, e);

@@ -2,9 +2,8 @@ package org.example.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import org.example.protocol.MiniRpcProtocol;
-import org.example.protocol.MiniRpcResponse;
-
+import org.example.MiniRpcProtocol;
+import org.example.MiniRpcResponse;
 public class RpcResponseHandler extends SimpleChannelInboundHandler<MiniRpcProtocol<MiniRpcResponse>> {
 
     @Override
