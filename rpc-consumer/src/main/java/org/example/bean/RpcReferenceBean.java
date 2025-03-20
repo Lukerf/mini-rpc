@@ -5,6 +5,7 @@ import org.example.enums.RegistryType;
 import org.example.registry.RegistryFactory;
 import org.example.registry.RegistryService;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Proxy;
 
