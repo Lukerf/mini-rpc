@@ -101,6 +101,7 @@ public class MiniRpcDecoder extends ByteToMessageDecoder {
                     out.add(protocol);
 
                 }
+                break;
 
             case RESPONSE:
 

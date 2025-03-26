@@ -19,7 +19,7 @@ public @interface RpcReference {
 
     String registryType() default "ZOOKEEPER";
 
-    String registryAddress() default "127.0.0.1:2181";
+    String registryAddress() default "127.0.0.1:2182";
 
     long timeout() default 5000;
 

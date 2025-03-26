@@ -19,31 +19,20 @@ import java.util.List;
 public class ZookeeperRegistryService implements RegistryService {
 
     public static final int BASE_SLEEP_TIME_MS = 1000;
-
     public static final int MAX_RETRIES = 3;
-
     public static final String ZK_BASE_PATH = "/mini_rpc";
-
     private final ServiceDiscovery<ServiceMeta> serviceDiscovery;
 
     public ZookeeperRegistryService(String registryAddr) throws Exception {
 
         CuratorFramework client = CuratorFrameworkFactory.newClient(registryAddr, new ExponentialBackoffRetry(BASE_SLEEP_TIME_MS, MAX_RETRIES));
-
         client.start();
-
         JsonInstanceSerializer<ServiceMeta> serializer = new JsonInstanceSerializer<>(ServiceMeta.class);
-
         this.serviceDiscovery = ServiceDiscoveryBuilder.builder(ServiceMeta.class)
-
                 .client(client)
-
                 .serializer(serializer)
-
                 .basePath(ZK_BASE_PATH)
-
                 .build();
-
         this.serviceDiscovery.start();
 
     }
@@ -75,17 +64,11 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
 
     public ServiceMeta discovery(String serviceName, int invokerHashCode) throws Exception {
-
         Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName);
-
         ServiceInstance<ServiceMeta> instance = new ZKConsistentHashLoadBalancer().select((List<ServiceInstance<ServiceMeta>>) serviceInstances, invokerHashCode);
-
         if (instance != null) {
-
             return instance.getPayload();
-
         }
-
         return null;
 
     }

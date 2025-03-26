@@ -6,7 +6,9 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.example.decoder.MiniRpcDecoder;
 import org.example.encoder.MiniRpcEncoder;
@@ -23,10 +25,10 @@ public class RpcConsumer {
         this.bootstrap = new Bootstrap();
         eventLoopGroup = new NioEventLoopGroup();
         bootstrap.group(eventLoopGroup)
-                .channel(NioServerSocketChannel.class)
-                .handler(new ChannelInitializer<NioServerSocketChannel>() {
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(NioServerSocketChannel ch) throws Exception {
+                    protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new MiniRpcEncoder())
                                 .addLast(new MiniRpcDecoder())

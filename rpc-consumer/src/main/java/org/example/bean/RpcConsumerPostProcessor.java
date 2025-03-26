@@ -63,7 +63,7 @@ public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanCl
         RpcReference annotation = AnnotationUtils.getAnnotation(field, RpcReference.class);
         if (annotation != null) {
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(RpcReferenceBean.class);
-            builder.setInitMethodName(RpcConstants.INIT_METHOD_NAME);
+            builder.setInitMethodName(RpcConstants.INIT_METHOD_NAME); // Bean的初始化方法
             builder.addPropertyValue("interfaceClass", field.getType());
             builder.addPropertyValue("serviceVersion", annotation.serviceVersion());
             builder.addPropertyValue("registryType", annotation.registryType());

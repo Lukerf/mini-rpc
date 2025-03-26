@@ -7,16 +7,31 @@ import org.example.*;
 import org.example.enums.MsgStatus;
 import org.example.enums.MsgType;
 import org.springframework.cglib.reflect.FastClass;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import javax.annotation.Resource;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtocol<MiniRpcRequest>> {
-    @Resource(name = "rpcRequestProcessor")
-    private ThreadPoolExecutor RpcRequestProcessor;
+
     private final Map<String, Object> rpcServiceMap;
+
+    private static final ThreadPoolTaskExecutor executor;
+
+    static {
+        log.info("rpcRequestProcessor init");
+        executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(15);
+        executor.setQueueCapacity(1000);
+        executor.setKeepAliveSeconds(60);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setThreadNamePrefix("rpcRequestProcessor-Thread-");
+        executor.initialize();
+        log.info("rpcRequestProcessor init success");
+    }
 
     public RpcRequestHandler(Map<String, Object> rpcServiceMap) {
         this.rpcServiceMap = rpcServiceMap;
@@ -24,8 +39,7 @@ public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtoc
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MiniRpcProtocol<MiniRpcRequest> protocol) {
-
-        RpcRequestProcessor.execute(() -> {
+        executor.execute(() -> {
             MiniRpcProtocol<MiniRpcResponse> resProtocol = new MiniRpcProtocol<>();
             MiniRpcResponse response = new MiniRpcResponse();
             MsgHeader header = protocol.getHeader();
@@ -63,4 +77,6 @@ public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtoc
         int methodIndex = fastClass.getIndex(methodName, parameterTypes);
         return fastClass.invoke(methodIndex, serviceBean, parameters);
     }
+
+
 }

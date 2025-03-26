@@ -5,7 +5,6 @@ import org.example.enums.RegistryType;
 import org.example.registry.RegistryFactory;
 import org.example.registry.RegistryService;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Proxy;
 
@@ -17,6 +16,7 @@ public class RpcReferenceBean implements FactoryBean<Object> {
     private String registryAddr;
     private long timeout;
     private Object object;
+
     @Override
     public Object getObject() throws Exception {
         return object;
